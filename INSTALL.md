@@ -7,7 +7,9 @@ This guide covers installing the app, setting up LLM/VLM backends, NVIDIA Riva f
 The fastest way to get started:
 
 ```bash
-cd multi-modal-ai-studio
+# Clone the repo (default directory name is multi_modal_ai_studio, from the repo name)
+git clone https://github.com/NVIDIA-AI-IOT/multi_modal_ai_studio.git
+cd multi_modal_ai_studio
 
 # Run automated setup
 ./scripts/setup_dev.sh
@@ -25,7 +27,7 @@ This script will:
 
 ## Run the app
 
-**Device support:** Voice and video use **browser devices (WebRTC)** by default. A **server USB microphone** (ALSA, e.g. EMEET) is supported—select it in the Devices tab; no PyAudio install needed on Linux. USB speaker and USB webcam on the server are not supported yet.
+**Device support:** Voice and video use **browser devices (WebRTC)** by default. A **server USB microphone** (ALSA, e.g. EMEET) is supported—select it in the Devices tab; no PyAudio install needed on Linux. **Server USB webcam** (V4L2) is supported—select it in the Devices tab; OpenCV is included in the default install. Server USB speaker is not supported yet.
 
 **View sessions only** (no Riva or LLM needed):
 
@@ -90,6 +92,8 @@ pip install -e .
 # - pyyaml (config files)
 # - numpy (audio processing)
 # - websockets (WebSocket support)
+# - av, Pillow (vision/video: frame encoding for VLMs)
+# - opencv-python-headless (server USB webcam: Devices tab, camera stream)
 # - ... and other dependencies
 ```
 
@@ -369,6 +373,7 @@ Quick reference for Jetson Thor (after downloading the FP8 model per the link ab
 export MODEL_PATH="${HOME}/.cache/huggingface/hub/cosmos-reason2-8b_v1208-fp8-static-kv8"
 
 mkdir -p ~/.cache/vllm
+
 sudo sysctl -w vm.drop_caches=3
 sudo docker run -it --rm --runtime=nvidia --network host \
   -v $MODEL_PATH:/models/cosmos-reason2-8b:ro \
@@ -532,6 +537,21 @@ If `ngc registry model download-version "nim/nvidia/cosmos-reason2-8b:1208-fp8-s
 No local setup needed. Set **API Base** to `https://api.openai.com/v1`, provide your API key, and choose a model (`gpt-4o` for vision, `gpt-4o-mini` for text).
 
 ### Verify Your Backend
+
+If you run **Riva** and **vLLM** in Docker, `docker ps` should show both containers before you start Multi-modal AI Studio:
+
+- **riva-speech** — image `nvcr.io/nvidia/riva/riva-speech:*`, ports 8000–8002, 8888, 50051 (and optionally 50000).
+- **vLLM** — image e.g. `ghcr.io/nvidia-ai-iot/vllm:*`, serving your model (vLLM may not list a port in PORTS if started with `--network host`; it listens on the port you passed, e.g. 8010).
+
+Example (Riva + vLLM on host network):
+
+```text
+CONTAINER ID   IMAGE                    COMMAND                  PORTS
+...            nvcr.io/.../riva-speech   ...                      0.0.0.0:8000-8002->8000-8002/tcp, 0.0.0.0:50051->50051/tcp, ...
+...            ghcr.io/.../vllm:...     "vllm serve /models/…"   (host network; check --port, e.g. 8010)
+```
+
+Then verify the APIs respond:
 
 ```bash
 # Ollama
