@@ -14,8 +14,8 @@ websockets>=11.0
 av>=10.0.0
 Pillow>=9.0.0
 
-# Optional: Jetson USB camera preview (pip install -e ".[camera]" or uncomment below)
-# opencv-python-headless>=4.5.0
+# Server USB webcam (Devices tab, camera stream, list_local_cameras)
+opencv-python-headless>=4.5.0
 
 # Development dependencies (optional)
 # Uncomment for development:

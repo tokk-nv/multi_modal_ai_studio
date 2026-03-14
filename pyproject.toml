@@ -37,6 +37,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "numpy>=1.21.0",
     "websockets>=11.0",
+    "av>=10.0.0",
+    "Pillow>=9.0.0",
+    "opencv-python-headless>=4.5.0",  # Server USB webcam (Devices tab, /api/devices/cameras, camera stream)
 ]
 
 [project.optional-dependencies]
@@ -52,7 +55,7 @@ audio = [
     "pyaudio>=0.2.13",  # For local USB device access (headless mode)
 ]
 camera = [
-    "opencv-python-headless>=4.5.0",  # For /api/camera/stream (Jetson USB webcam preview)
+    "opencv-python-headless>=4.5.0",  # also in main deps; extra kept for backward compatibility
 ]
 webrtc-camera = [
     "aiortc>=1.6.0",
