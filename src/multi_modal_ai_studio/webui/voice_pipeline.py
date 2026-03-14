@@ -169,6 +169,10 @@ def _normalize_frontend_config(payload: Dict[str, Any]) -> Dict[str, Any]:
         if "ollama_url" in llm and "api_base" not in llm:
             base = (llm.get("ollama_url") or "").rstrip("/")
             llm["api_base"] = f"{base}/v1" if base else "http://localhost:11434/v1"
+        # Use top-level llm_model_name for llm.model when model is missing/empty (Ollama requires model)
+        top_model = (data.get("llm_model_name") or "").strip()
+        if top_model and not (llm.get("model") or "").strip():
+            llm["model"] = top_model
         data["llm"] = llm
     return data
 
@@ -748,6 +752,12 @@ async def _run_voice_pipeline(
         return None
     if not llm_config.api_base:
         await ws.send_str(json.dumps({"type": "error", "error": "LLM api_base required"}))
+        return None
+    if not (getattr(llm_config, "model", None) or "").strip():
+        await ws.send_str(json.dumps({
+            "type": "error",
+            "error": "LLM model is required. Please select a model in the Voice panel (e.g. an Ollama model).",
+        }))
         return None
 
     try:

@@ -447,6 +447,10 @@ class SessionConfig:
         if 'ollama_url' in llm_data and 'api_base' not in llm_data:
             base = (llm_data.get('ollama_url') or '').rstrip('/')
             llm_data['api_base'] = f"{base}/v1" if base else "http://localhost:11434/v1"
+        # Frontend may send llm_model_name at top level; use it for llm.model when model is empty
+        top_level_model = (data.get('llm_model_name') or '').strip()
+        if top_level_model and not (llm_data.get('model') or '').strip():
+            llm_data['model'] = top_level_model
         llm_data = {k: v for k, v in llm_data.items() if k in LLMConfig.__dataclass_fields__}
         tts_data = dict(data.get('tts', {}))
         if 'riva_server' in tts_data and 'server' not in tts_data:
